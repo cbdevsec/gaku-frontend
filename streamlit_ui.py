@@ -1,11 +1,5 @@
 import streamlit as st
-import subprocess
-
-# Log installed packages
-installed_packages = subprocess.run(["pip", "list"], capture_output=True, text=True)
-st.write("Installed Packages:", installed_packages.stdout)
-
-import fitz  # PyMuPDF for PDF processing
+import pdfplumber  # ✅ Replaces fitz for PDF processing
 import nltk
 import requests
 import matplotlib.pyplot as plt
@@ -14,19 +8,18 @@ import random
 from nltk.tokenize import sent_tokenize
 import os 
 
-
 # 🔹 Configure API URL
-API_URL = "https://gaku-backend.onrender.com"
+API_URL = "http://127.0.0.1:5000"
 
 # 🔹 Force NLTK to use a local directory
 nltk.data.path.append(os.path.join(os.path.dirname(__file__), "nltk_data"))
 
-# 🔹 Function to extract text from a PDF
+# 🔹 Function to extract text from a PDF (Using pdfplumber)
 def extract_text_from_pdf(pdf_file):
-    doc = fitz.open(pdf_file)
     text = ""
-    for page in doc:
-        text += page.get_text("text") + "\n"
+    with pdfplumber.open(pdf_file) as pdf:
+        for page in pdf.pages:
+            text += page.extract_text() + "\n" if page.extract_text() else ""
     return text
 
 # 🔹 Function to generate a mind map
@@ -70,7 +63,6 @@ def get_study_history(user_id):
         return response.json()
     else:
         return None
-    
 
 # ✅ Streamlit UI
 st.title("📚 AI Study Assistant")
@@ -103,8 +95,7 @@ if uploaded_file is not None:
             st.write(f"🔹 *Answer:* |||| *(Click to reveal)*")
             st.write("---")
 
-   #
-
+# 🔐 Login Section
 st.title("🔐 Login to AI Study Assistant")
 
 email = st.text_input("Email")
@@ -117,8 +108,9 @@ if st.button("Login"):
     else:
         st.error("❌ Invalid credentials.")
 
+# 📊 View Dashboard
 if st.button("📊 View Dashboard"):
-    response = requests.get(f"http://127.0.0.1:5000/get-dashboard/{user_id}")
+    response = requests.get(f"{API_URL}/get-dashboard/{user_id}")
     if response.status_code == 200:
         stats = response.json()
         st.write(f"📚 **Total Flashcards Created**: {stats['flashcards_created']}")
@@ -126,8 +118,7 @@ if st.button("📊 View Dashboard"):
     else:
         st.error("❌ Failed to load dashboard data.")
 
-
-# 🔹 View Study History
+# 🔍 View Study History
 if st.button("🔍 View History"):
     history = get_study_history(user_id)
     if history:
