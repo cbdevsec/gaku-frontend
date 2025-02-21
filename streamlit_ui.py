@@ -1,4 +1,10 @@
 import streamlit as st
+import subprocess
+
+# Log installed packages
+installed_packages = subprocess.run(["pip", "list"], capture_output=True, text=True)
+st.write("Installed Packages:", installed_packages.stdout)
+
 import fitz  # PyMuPDF for PDF processing
 import nltk
 import requests
