@@ -10,7 +10,7 @@ import os
 
 
 # 🔹 Configure API URL
-API_URL = "http://127.0.0.1:5000"
+API_URL = "https://gaku-backend.onrender.com"
 
 # 🔹 Force NLTK to use a local directory
 nltk.data.path.append(os.path.join(os.path.dirname(__file__), "nltk_data"))
